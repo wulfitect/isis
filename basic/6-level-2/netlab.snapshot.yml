@@ -113,6 +113,10 @@ defaults:
         type: list
       exec: _v_option
       fail: str
+      level:
+        type: str
+        valid_values:
+        - warning
       nodes:
         _subtype: node_id
         type: list
@@ -577,6 +581,7 @@ defaults:
     - eos
     - frr
     - iosv
+    - iosvl2
     - junos
     - none
     - nxos
@@ -755,6 +760,7 @@ defaults:
     - eos
     - frr
     - iosv
+    - iosvl2
     - iosxr
     - junos
     - none
@@ -779,6 +785,9 @@ defaults:
       - isis
       missing_igp: true
   const:
+    multi_provider:
+    - libvirt
+    - clab
     routing_protocols:
     - bgp
     - connected
@@ -789,6 +798,8 @@ defaults:
     vrf_igp_protocols:
     - connected
     - ospf
+    - isis
+    - ripv2
   daemons:
     bird:
       clab:
@@ -1044,6 +1055,7 @@ defaults:
             - standard
           import:
           - ospf
+          - isis
           - ripv2
           - connected
           - vrf
@@ -1068,6 +1080,11 @@ defaults:
           ipv6:
             lla: true
         isis:
+          import:
+          - bgp
+          - ospf
+          - ripv2
+          - connected
           unnumbered:
             ipv4: true
             ipv6: true
@@ -1077,11 +1094,18 @@ defaults:
             policy: true
           import:
           - bgp
+          - isis
           - ripv2
           - connected
           - vrf
           unnumbered: true
         ripv2:
+          import:
+          - bgp
+          - isis
+          - ospf
+          - connected
+          - vrf
           ipv4: true
           ipv6: true
           passive: true
@@ -1112,6 +1136,8 @@ defaults:
           bgp: true
           ospfv2: true
           ospfv3: true
+          ripng: true
+          ripv2: true
       graphite:
         icon: router
       group_vars:
@@ -1166,6 +1192,7 @@ defaults:
             - standard
           import:
           - ospf
+          - isis
           - ripv2
           - connected
           - vrf
@@ -1190,6 +1217,11 @@ defaults:
           ipv6:
             lla: true
         isis:
+          import:
+          - bgp
+          - ospf
+          - ripv2
+          - connected
           unnumbered:
             ipv4: true
             ipv6: true
@@ -1204,11 +1236,18 @@ defaults:
             policy: true
           import:
           - bgp
+          - isis
           - ripv2
           - connected
           - vrf
           unnumbered: true
         ripv2:
+          import:
+          - bgp
+          - isis
+          - ospf
+          - connected
+          - vrf
           ipv4: true
           ipv6: true
           passive: true
@@ -1239,6 +1278,8 @@ defaults:
           bgp: true
           ospfv2: true
           ospfv3: true
+          ripng: true
+          ripv2: true
         vxlan: {}
       graphite:
         icon: router
@@ -1277,6 +1318,7 @@ defaults:
         mtu: 1500
         node:
           config_templates:
+            hosts: /etc/hosts
             interfaces: /etc/network/interfaces
           kind: cvx
           runtime: docker
@@ -1335,6 +1377,12 @@ defaults:
           - vrf
           unnumbered: true
         ripv2:
+          import:
+          - bgp
+          - isis
+          - ospf
+          - connected
+          - vrf
           ipv4: true
           ipv6: true
           passive: true
@@ -1366,6 +1414,8 @@ defaults:
         vrf:
           bgp: true
           ospfv2: true
+          ripng: true
+          ripv2: true
         vxlan: {}
       graphite:
         icon: switch
@@ -1434,6 +1484,11 @@ defaults:
     dellos10:
       clab:
         build: https://containerlab.dev/manual/kinds/vr-ftosv/
+        group_vars:
+          ansible_ssh_pass: admin
+          ansible_user: admin
+          netlab_check_delay: 10
+          netlab_check_retries: 40
         image: vrnetlab/vr-ftosv
         interface:
           name: eth{ifindex}
@@ -1482,7 +1537,7 @@ defaults:
       libvirt:
         build: https://netlab.tools/labs/dellos10/
         create: virt-install --connect=qemu:///system --name=vm_box --arch=x86_64
-          --cpu host --vcpus=2 --hvm --ram=2048 --network=network:vagrant-libvirt,model=virtio
+          --cpu host --vcpus=2 --hvm --ram=4096 --network=network:vagrant-libvirt,model=virtio
           --graphics none --import --disk path=vm.qcow2,format=qcow2,bus=sata --disk
           path=hdb_OS10-installer.qcow2,format=qcow2,bus=virtio --disk path=hdc_OS10-platform.qcow2,format=qcow2,bus=virtio
         image: dell/os10
@@ -1590,6 +1645,7 @@ defaults:
             - large
           import:
           - ospf
+          - isis
           - ripv2
           - connected
           - vrf
@@ -1620,6 +1676,12 @@ defaults:
             lla: true
           system_mtu: true
         isis:
+          import:
+          - bgp
+          - ospf
+          - ripv2
+          - connected
+          - vrf
           unnumbered:
             ipv4: true
             ipv6: true
@@ -1634,6 +1696,7 @@ defaults:
             policy: true
           import:
           - bgp
+          - isis
           - ripv2
           - connected
           - vrf
@@ -1667,9 +1730,9 @@ defaults:
           svi_interface_name: Vlan{vlan}
         vrf:
           bgp: true
+          isis: true
           ospfv2: true
           ospfv3: true
-          ripv2: true
         vxlan: {}
       graphite:
         icon: switch
@@ -1751,6 +1814,7 @@ defaults:
           import:
           - ospf
           - ripv2
+          - isis
           - connected
           - vrf
           ipv6_lla: true
@@ -1761,12 +1825,22 @@ defaults:
         evpn:
           asymmetrical_irb: true
           irb: true
+        gateway:
+          protocol:
+          - vrrp
+          - anycast
         initial:
           ipv4:
             unnumbered: true
           ipv6:
             lla: true
         isis:
+          import:
+          - bgp
+          - ripv2
+          - ospf
+          - connected
+          - vrf
           unnumbered:
             ipv4: true
             ipv6: true
@@ -1780,10 +1854,17 @@ defaults:
           import:
           - bgp
           - ripv2
+          - isis
           - connected
           - vrf
           unnumbered: true
         ripv2:
+          import:
+          - bgp
+          - isis
+          - ospf
+          - connected
+          - vrf
           ipv4: true
           ipv6: true
           passive: true
@@ -1817,9 +1898,12 @@ defaults:
           svi_interface_name: vlan{vlan}
         vrf:
           bgp: true
+          isis: true
           keep_module: true
           ospfv2: true
           ospfv3: true
+          ripng: true
+          ripv2: true
         vxlan:
           vtep6: true
       graphite:
@@ -1866,6 +1950,7 @@ defaults:
             - standard
           import:
           - ospf
+          - isis
           - ripv2
           - connected
           - vrf
@@ -1890,6 +1975,11 @@ defaults:
           ipv6:
             lla: true
         isis:
+          import:
+          - bgp
+          - ospf
+          - ripv2
+          - connected
           unnumbered:
             ipv4: true
             ipv6: true
@@ -1904,11 +1994,18 @@ defaults:
             policy: true
           import:
           - bgp
+          - isis
           - ripv2
           - connected
           - vrf
           unnumbered: true
         ripv2:
+          import:
+          - bgp
+          - isis
+          - ospf
+          - connected
+          - vrf
           ipv4: true
           ipv6: true
           passive: true
@@ -1941,6 +2038,8 @@ defaults:
           bgp: true
           ospfv2: true
           ospfv3: true
+          ripng: true
+          ripv2: true
       graphite:
         icon: router
       group_vars:
@@ -1958,6 +2057,135 @@ defaults:
         create_template: iosv.xml.j2
         image: cisco/iosv
       loopback_interface_name: Loopback{ifindex}
+      routing:
+        _rm_per_af: true
+      tunnel_interface_name: Tunnel{ifindex}
+      virtualbox:
+        image: cisco/iosv
+    iosvl2:
+      description: IOSv L2 image
+      external:
+        image: none
+      features:
+        bfd: {}
+        bgp:
+          activate_af: true
+          community:
+            extended:
+            - extended
+            standard:
+            - standard
+          import:
+          - ospf
+          - isis
+          - ripv2
+          - connected
+          - vrf
+          local_as: true
+          local_as_ibgp: true
+          vrf_local_as: true
+        dhcp:
+          client:
+            ipv4: true
+            ipv6: true
+            routing: true
+          relay: true
+          server: true
+          vrf: true
+        eigrp: {}
+        gateway:
+          protocol:
+          - vrrp
+        initial:
+          ipv4:
+            unnumbered: false
+          ipv6:
+            lla: true
+        isis:
+          import:
+          - bgp
+          - ospf
+          - ripv2
+          - connected
+          unnumbered:
+            ipv4: true
+            ipv6: true
+            network: true
+        mpls:
+          6pe: true
+          bgp: true
+          ldp: true
+          vpn: true
+        ospf:
+          default:
+            policy: true
+          import:
+          - bgp
+          - isis
+          - ripv2
+          - connected
+          - vrf
+          unnumbered: true
+        ripv2:
+          import:
+          - bgp
+          - isis
+          - ospf
+          - connected
+          - vrf
+          ipv4: true
+          ipv6: true
+          passive: true
+        routing:
+          aspath: true
+          community:
+            expanded: true
+          policy:
+            match:
+            - prefix
+            - nexthop
+            - aspath
+            - community
+            set:
+              community:
+                append: true
+                standard: true
+              locpref: true
+              med: true
+              prepend: true
+              weight: true
+          prefix: true
+        vlan:
+          mixed_trunk: true
+          model: switch
+          native_routed: true
+          subif_name: '{ifname}.{subif_index}'
+          svi_interface_name: Vlan{vlan}
+        vrf:
+          bgp: true
+          ospfv2: true
+          ospfv3: true
+          ripng: true
+          ripv2: true
+      graphite:
+        icon: router
+      group_vars:
+        ansible_become_method: enable
+        ansible_become_password: vagrant
+        ansible_connection: network_cli
+        ansible_network_os: ios
+        ansible_ssh_pass: vagrant
+        ansible_user: vagrant
+        netlab_device_type: iosvl2
+        netlab_initial: always
+      interface_name: GigabitEthernet{ifindex // 4}/{ifindex % 4}
+      libvirt:
+        build: https://netlab.tools/labs/iosvl2/
+        create_template: iosv.xml.j2
+        image: cisco/iosvl2
+      loopback_interface_name: Loopback{ifindex}
+      node:
+        min_mtu: 1500
       routing:
         _rm_per_af: true
       tunnel_interface_name: Tunnel{ifindex}
@@ -2367,7 +2595,7 @@ defaults:
       clab:
         group_vars:
           srlinux_grpc_port: 57400
-        image: ghcr.io/nokia/srlinux:24.3.2
+        image: ghcr.io/nokia/srlinux:24.7.2
         interface:
           name: e1-{ifindex}
         node:
@@ -2380,6 +2608,12 @@ defaults:
         bfd: {}
         bgp:
           activate_af: true
+          import:
+          - ospf
+          - isis
+          - connected
+          - vrf
+          - no_policy
           ipv6_lla: true
           local_as: true
           local_as_ibgp: true
@@ -2398,6 +2632,12 @@ defaults:
             lla: true
           system_mtu: true
         isis:
+          import:
+          - ospf
+          - bgp
+          - connected
+          - vrf
+          - no_policy
           unnumbered:
             ipv4: true
             ipv6: true
@@ -2405,12 +2645,22 @@ defaults:
         mpls:
           ldp: true
         ospf:
+          default: true
+          import:
+          - bgp
+          - isis
+          - connected
+          - vrf
+          - no_policy
           unnumbered: true
         routing:
           policy:
+            match:
+              prefix: true
             set:
             - locpref
             - med
+          prefix: true
         sr: {}
         vlan:
           mixed_trunk: true
@@ -2419,6 +2669,7 @@ defaults:
           svi_interface_name: irb0.{vlan}
         vrf:
           bgp: true
+          isis: true
           keep_module: true
           ospfv2: true
           ospfv3: true
@@ -2433,6 +2684,17 @@ defaults:
         ansible_ssh_pass: NokiaSrl1!
         ansible_user: admin
         netlab_console_connection: ssh
+        netlab_match_protomap:
+          bgp:
+          - bgp
+          - bgp-evpn
+          connected:
+          - local
+          isis:
+          - isis
+          ospf:
+          - ospfv2
+          - ospfv3
       interface_name: ethernet-1/{ifindex}
       loopback_interface_name: lo0.{ifindex}
       mgmt_if: mgmt0
@@ -2930,6 +3192,7 @@ defaults:
     - dnsmasq
     - eos
     - iosv
+    - iosvl2
     - linux
     transform_after:
     - vlan
@@ -2966,6 +3229,7 @@ defaults:
     - cat8000v
     - csr
     - iosv
+    - iosvl2
     - nxos
     transform_after:
     - vlan
@@ -3129,7 +3393,9 @@ defaults:
     - cumulus
     - dellos10
     - eos
+    - frr
     - iosv
+    - iosvl2
     - none
     - nxos
     - srlinux
@@ -3178,6 +3444,13 @@ defaults:
 
         '
       node_bundle: 'evpn.bundle attribute can be used only in global VRF definition
+
+        '
+    libvirt:
+      capture: 'Change the link type to Linux bridge with ''type: lan'' link attribute
+        or see
+
+        https://netlab.tools/labs/libvirt/#libvirt-capture for other options.
 
         '
     quirks:
@@ -3233,6 +3506,7 @@ defaults:
           - bool
           ipv4: bool
           ipv6: bool
+        instance: str
         type:
           type: str
           valid_values:
@@ -3279,6 +3553,8 @@ defaults:
           - bool
           ipv4: bool
           ipv6: bool
+        import: _r_import
+        instance: str
         net: net
         type:
           type: str
@@ -3295,6 +3571,7 @@ defaults:
         ipv4: IPv4 unnumbered interfaces
         ipv6: IPv6 unnumbered interfaces
         network: multi-access unnumbered links
+    instance: Gandalf
     supported_on:
     - asav
     - cat8000v
@@ -3302,6 +3579,7 @@ defaults:
     - eos
     - frr
     - iosv
+    - iosvl2
     - iosxr
     - junos
     - none
@@ -3427,6 +3705,7 @@ defaults:
     - eos
     - frr
     - iosv
+    - iosvl2
     - junos
     - none
     - routeros
@@ -3458,6 +3737,10 @@ defaults:
             vifprefix: vgif_{id}
       name: ml_{id}
   name: level2
+  netlab:
+    capture:
+      command: tcpdump -i {intf}
+      command_args: -l -v
   ospf:
     area: 0.0.0.0
     attributes:
@@ -3595,6 +3878,7 @@ defaults:
     - fortios
     - frr
     - iosv
+    - iosvl2
     - iosxr
     - junos
     - none
@@ -3668,12 +3952,12 @@ defaults:
   paths:
     collect:
       dirs:
-      - /home/wm/.local/lib/python3.12/site-packages/netsim/ansible/tasks/fetch-config
+      - /home/wm/development/isis/basic/6-level-2/.venv/lib/python3.12/site-packages/netsim/ansible/tasks/fetch-config
     custom:
       dirs:
       - /home/wm/development/isis/basic/6-level-2
       - /home/wm/.netlab
-      - /home/wm/.local/lib/python3.12/site-packages/netsim/extra
+      - /home/wm/development/isis/basic/6-level-2/.venv/lib/python3.12/site-packages/netsim/extra
       files:
       - '{{ custom_config + ''/'' + inventory_hostname + ''.'' + netlab_device_type
         + ''-'' + node_provider + ''.j2'' }}'
@@ -3705,7 +3989,7 @@ defaults:
       - '{{ custom_config }}/deploy.yml'
     deploy:
       dirs:
-      - /home/wm/.local/lib/python3.12/site-packages/netsim/ansible/tasks
+      - /home/wm/development/isis/basic/6-level-2/.venv/lib/python3.12/site-packages/netsim/ansible/tasks
       files:
       - '{{ netlab_device_type }}/{{ config_module }}-{{ provider|default(netlab_provider)
         }}.yml'
@@ -3726,10 +4010,10 @@ defaults:
       - deploy-config/{{ ansible_network_os }}.yml
     plugin:
     - /home/wm/development/isis/plugin
-    - /home/wm/.local/lib/python3.12/site-packages/netsim/extra
+    - /home/wm/development/isis/basic/6-level-2/.venv/lib/python3.12/site-packages/netsim/extra
     ready:
       dirs:
-      - /home/wm/.local/lib/python3.12/site-packages/netsim/ansible/tasks/readiness-check
+      - /home/wm/development/isis/basic/6-level-2/.venv/lib/python3.12/site-packages/netsim/ansible/tasks/readiness-check
       files:
       - '{{netlab_device_type}}-{{provider|default(netlab_provider)}}.yml'
       - '{{netlab_device_type}}.yml'
@@ -3746,10 +4030,10 @@ defaults:
       - '{{netlab_device_type}}/{{config_module}}.j2'
     templates:
       dirs:
-      - /home/wm/.local/lib/python3.12/site-packages/netsim/ansible/templates
-      - /home/wm/.local/lib/python3.12/site-packages/netsim/daemons
+      - /home/wm/development/isis/basic/6-level-2/.venv/lib/python3.12/site-packages/netsim/ansible/templates
+      - /home/wm/development/isis/basic/6-level-2/.venv/lib/python3.12/site-packages/netsim/daemons
     validate:
-    - /home/wm/.local/lib/python3.12/site-packages/netsim/validate
+    - /home/wm/development/isis/basic/6-level-2/.venv/lib/python3.12/site-packages/netsim/validate
   plugin: []
   ports:
     http: 80
@@ -3917,6 +4201,23 @@ defaults:
           - bool
           ipv4: bool
           ipv6: bool
+        timers:
+          garbage:
+            max_value: 600
+            min_value: 5
+            type: int
+          timeout:
+            max_value: 3600
+            min_value: 5
+            type: int
+          update:
+            max_value: 60
+            min_value: 5
+            type: int
+        version:
+          max_value: 2
+          min_value: 2
+          type: int
       link:
         passive: bool
       node:
@@ -3926,11 +4227,45 @@ defaults:
           _list_to_dict: true
           ipv4: bool
           ipv6: bool
+        import: _r_import
+        timers:
+          garbage:
+            max_value: 600
+            min_value: 5
+            type: int
+          timeout:
+            max_value: 3600
+            min_value: 5
+            type: int
+          update:
+            max_value: 60
+            min_value: 5
+            type: int
+        version:
+          max_value: 2
+          min_value: 2
+          type: int
       vrf:
         active: bool
+        timers:
+          garbage:
+            max_value: 600
+            min_value: 5
+            type: int
+          timeout:
+            max_value: 3600
+            min_value: 5
+            type: int
+          update:
+            max_value: 60
+            min_value: 5
+            type: int
+      vrf_copy:
+      - timers
     config_after:
     - vlan
     - dhcp
+    - routing
     features:
       ipv4: RIPv2
       ipv6: RIPng
@@ -3942,11 +4277,13 @@ defaults:
     - eos
     - frr
     - iosv
+    - iosvl2
     - sros
     - vyos
     transform_after:
     - vlan
     - vrf
+    version: 2
     warnings:
       inactive: true
   routing:
@@ -4044,6 +4381,7 @@ defaults:
     - eos
     - frr
     - iosv
+    - iosvl2
     - none
     - srlinux
     - sros
@@ -4218,6 +4556,7 @@ defaults:
     - eos
     - frr
     - iosv
+    - iosvl2
     - none
     - nxos
     - routeros
@@ -4257,6 +4596,7 @@ defaults:
     - eos
     - frr
     - iosv
+    - iosvl2
     - junos
     - none
     - nxos
@@ -4336,6 +4676,7 @@ input:
 - package:topology-defaults.yml
 isis:
   area: '49.0001'
+  instance: Gandalf
   type: level-1-2
 links:
 - bandwidth: 100000
@@ -4447,6 +4788,7 @@ nodes:
       af:
         ipv4: true
       area: '49.0001'
+      instance: Gandalf
       type: level-1-2
     loopback:
       ifindex: 0
@@ -4511,6 +4853,7 @@ nodes:
       af:
         ipv4: true
       area: '49.0001'
+      instance: Gandalf
       type: level-1-2
     loopback:
       ifindex: 0
@@ -4575,6 +4918,7 @@ nodes:
       af:
         ipv4: true
       area: '49.0001'
+      instance: Gandalf
       type: level-1-2
     loopback:
       ifindex: 0
